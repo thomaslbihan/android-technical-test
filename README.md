@@ -50,6 +50,4 @@ A media is described as follow
 
 
 ### Sample screen render
-![Screen list of artists](readmeAssets/ArtistList.png)
-![Screen list of artist's medias](readmeAssets/MediaList.png)
-![Screen player of current playing media](readmeAssets/Player.png)
+![Screen list of artists](readmeAssets/ArtistList.png) ![Screen list of artist's medias](readmeAssets/MediaList.png) ![Screen player of current playing media](readmeAssets/Player.png)
