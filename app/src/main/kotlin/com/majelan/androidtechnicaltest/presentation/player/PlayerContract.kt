@@ -11,6 +11,7 @@ data class PlayerState(
    val isMediaErrorVisible: Boolean,
    val picture: String,
    val title: String,
+   val songUri: String,
    val artistName: String,
    val artistTracks: List<MediaUI>,
    val isArtistTracksLoadingVisible: Boolean,
@@ -28,6 +29,7 @@ data class PlayerState(
 
 sealed interface PlayerEvent: MVIEvent {
    object OnRetryMediaButtonClicked: PlayerEvent
+   object OnHardwareBackPressed: PlayerEvent
    object OnBackButtonClicked: PlayerEvent
    object OnPlayButtonClicked: PlayerEvent
    object OnPauseButtonClicked: PlayerEvent

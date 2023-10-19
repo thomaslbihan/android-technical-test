@@ -18,6 +18,7 @@ import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.Navigat
 import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.ScrollToTop
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnArtistTracksRetryButtonClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnBackButtonClicked
+import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnHardwareBackPressed
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnMediaItemClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnPauseButtonClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnPlayButtonClicked
@@ -49,6 +50,7 @@ class PlayerViewModel @Inject constructor(
       isMediaErrorVisible = false,
       picture = "",
       title = "",
+      songUri = "",
       artistName = "",
       artistTracks = emptyList(),
       isArtistTracksLoadingVisible = false,
@@ -73,6 +75,7 @@ class PlayerViewModel @Inject constructor(
 
    override fun process(event: PlayerEvent) {
       when(event) {
+         OnHardwareBackPressed -> onHardwareBackPressed()
          OnBackButtonClicked -> onBackButtonClicked()
          OnPauseButtonClicked -> onPauseButtonClicked()
          OnPlayButtonClicked -> onPlayButtonClicked()
@@ -83,7 +86,12 @@ class PlayerViewModel @Inject constructor(
       }
    }
 
+   private fun onHardwareBackPressed() {
+      updateState { it.copy(isPlaying = false) }
+   }
+
    private fun onBackButtonClicked() {
+      onHardwareBackPressed()
       emit(NavigateBack)
    }
 
@@ -143,6 +151,7 @@ class PlayerViewModel @Inject constructor(
          it.copy(
             picture = media.picture,
             title = media.name,
+            songUri = media.songUri,
             artistName = media.artist,
             genre = media.genre,
             isMediaLoadingVisible = false,

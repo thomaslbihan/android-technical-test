@@ -1,34 +1,43 @@
 package com.majelan.androidtechnicaltest.presentation.player
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.Icons.AutoMirrored
 import androidx.compose.material.icons.Icons.Rounded
-import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,9 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.Dimension.Companion
-import androidx.core.widget.ContentLoadingProgressBar
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -47,10 +57,11 @@ import com.majelan.androidtechnicaltest.presentation.artist_details.entities.Med
 import com.majelan.androidtechnicaltest.presentation.common.EmptyState
 import com.majelan.androidtechnicaltest.presentation.common.ErrorView
 import com.majelan.androidtechnicaltest.presentation.extensions.OnAction
-import com.majelan.androidtechnicaltest.presentation.extensions.centerHorizontallyTo
 import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.NavigateBack
 import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.ScrollToTop
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnArtistTracksRetryButtonClicked
+import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnBackButtonClicked
+import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnHardwareBackPressed
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnMediaItemClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnPauseButtonClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnPlayButtonClicked
@@ -68,75 +79,91 @@ fun PlayerScreen(
    val coroutineScope = rememberCoroutineScope()
 
    OnAction(viewModel.actionFlow) {
-      when(it) {
+      when (it) {
          ScrollToTop -> coroutineScope.launch {
             scrollState.animateScrollTo(0)
          }
+
          NavigateBack -> navController.popBackStack()
       }
    }
 
-   ConstraintLayout(
-      modifier = Modifier
-         .fillMaxSize()
-         .verticalScroll(scrollState)
-   ) {
-      val (playerRef, artistTracksRef, recommendationsRef) = createRefs()
+   BackHandler {
+      viewModel.process(OnHardwareBackPressed)
+   }
 
-      val configuration = LocalConfiguration.current
-      val playerHeight = (configuration.screenHeightDp * 0.8f).dp
-      Player(
-         modifier = Modifier.constrainAs(playerRef) {
-            width = Dimension.fillToConstraints
-            height = Companion.value(playerHeight)
-            centerHorizontallyTo(parent)
-            top.linkTo(parent.top)
-         },
-         picture = state.picture,
-         title = state.title,
-         artistName = state.artistName,
-         isPlaying = state.isPlaying,
-         isErrorVisible = state.isMediaErrorVisible,
-         isLoadingVisible = state.isMediaLoadingVisible,
-         onPlayButtonClicked = { viewModel.process(OnPlayButtonClicked) },
-         onPauseButtonClicked = { viewModel.process(OnPauseButtonClicked) },
-         onRetryButtonClicked = { viewModel.process(OnRetryMediaButtonClicked) },
-      )
+   Box(modifier = Modifier.fillMaxSize()) {
 
-      Section(
-         modifier = Modifier.constrainAs(artistTracksRef) {
-            width = Companion.fillToConstraints
-            top.linkTo(playerRef.bottom, margin = 16.dp)
-            centerHorizontallyTo(parent)
-         },
-         title = stringResource(id = R.string.player_artist_tracks_title, state.artistName),
-         emptyStateText = stringResource(id = R.string.player_artist_tracks_empty, state.artistName),
-         medias = state.artistTracks,
-         isListVisible = state.isArtistTracksListVisible,
-         isLoadingVisible = state.isArtistTracksLoadingVisible,
-         isErrorVisible = state.isArtistTracksErrorVisible,
-         isEmptyStateVisible = state.isArtistTracksEmptyStateVisible,
-         onMediaClicked = { viewModel.process(OnMediaItemClicked(it)) },
-         onRetryButtonClicked = { viewModel.process(OnArtistTracksRetryButtonClicked) }
-      )
+      ConstraintLayout(
+         modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+      ) {
+         val (playerRef, artistTracksRef, recommendationsRef) = createRefs()
 
-      Section(
-         modifier = Modifier.constrainAs(recommendationsRef) {
-            width = Companion.fillToConstraints
-            top.linkTo(artistTracksRef.bottom, margin = 16.dp)
-            centerHorizontallyTo(parent)
-            bottom.linkTo(parent.bottom, margin = 32.dp)
-         },
-         title = stringResource(id = R.string.player_recommendations_title),
-         emptyStateText = stringResource(id = R.string.player_recommendations_empty),
-         medias = state.recommendations,
-         isListVisible = state.isRecommendationsListVisible,
-         isLoadingVisible = state.isRecommendationsLoadingVisible,
-         isErrorVisible = state.isRecommendationsErrorVisible,
-         isEmptyStateVisible = state.isRecommendationsEmptyStateVisible,
-         onMediaClicked = { viewModel.process(OnMediaItemClicked(it)) },
-         onRetryButtonClicked = { viewModel.process(OnRecommendationsRetryButtonClicked) }
-      )
+         Player(
+            modifier = Modifier.constrainAs(playerRef) {
+               width = Dimension.fillToConstraints
+               centerHorizontallyTo(parent)
+               top.linkTo(parent.top, margin = 16.dp)
+            },
+            picture = state.picture,
+            title = state.title,
+            songUri = state.songUri,
+            artistName = state.artistName,
+            isPlaying = state.isPlaying,
+            isErrorVisible = state.isMediaErrorVisible,
+            isLoadingVisible = state.isMediaLoadingVisible,
+            onPlayButtonClicked = { viewModel.process(OnPlayButtonClicked) },
+            onPauseButtonClicked = { viewModel.process(OnPauseButtonClicked) },
+            onRetryButtonClicked = { viewModel.process(OnRetryMediaButtonClicked) },
+         )
+
+         Section(
+            modifier = Modifier.constrainAs(artistTracksRef) {
+               width = Companion.fillToConstraints
+               top.linkTo(playerRef.bottom, margin = 48.dp)
+               centerHorizontallyTo(parent)
+            },
+            title = stringResource(id = R.string.player_artist_tracks_title, state.artistName),
+            emptyStateText = stringResource(id = R.string.player_artist_tracks_empty, state.artistName),
+            medias = state.artistTracks,
+            isListVisible = state.isArtistTracksListVisible,
+            isLoadingVisible = state.isArtistTracksLoadingVisible,
+            isErrorVisible = state.isArtistTracksErrorVisible,
+            isEmptyStateVisible = state.isArtistTracksEmptyStateVisible,
+            onMediaClicked = { viewModel.process(OnMediaItemClicked(it)) },
+            onRetryButtonClicked = { viewModel.process(OnArtistTracksRetryButtonClicked) }
+         )
+
+         Section(
+            modifier = Modifier.constrainAs(recommendationsRef) {
+               width = Companion.fillToConstraints
+               top.linkTo(artistTracksRef.bottom, margin = 16.dp)
+               centerHorizontallyTo(parent)
+               bottom.linkTo(parent.bottom, margin = 32.dp)
+            },
+            title = stringResource(id = R.string.player_recommendations_title),
+            emptyStateText = stringResource(id = R.string.player_recommendations_empty),
+            medias = state.recommendations,
+            isListVisible = state.isRecommendationsListVisible,
+            isLoadingVisible = state.isRecommendationsLoadingVisible,
+            isErrorVisible = state.isRecommendationsErrorVisible,
+            isEmptyStateVisible = state.isRecommendationsEmptyStateVisible,
+            onMediaClicked = { viewModel.process(OnMediaItemClicked(it)) },
+            onRetryButtonClicked = { viewModel.process(OnRecommendationsRetryButtonClicked) }
+         )
+      }
+
+      IconButton(
+         modifier = Modifier.align(Alignment.TopStart),
+         onClick = { viewModel.process(OnBackButtonClicked) }
+      ) {
+         Icon(
+            imageVector = AutoMirrored.Rounded.ArrowBack,
+            contentDescription = ""
+         )
+      }
    }
 }
 
@@ -146,6 +173,7 @@ private fun Player(
    modifier: Modifier,
    picture: String,
    title: String,
+   songUri: String,
    artistName: String,
    isPlaying: Boolean,
    isErrorVisible: Boolean,
@@ -154,6 +182,14 @@ private fun Player(
    onPauseButtonClicked: () -> Unit,
    onRetryButtonClicked: () -> Unit,
 ) {
+   val infiniteTransition = rememberInfiniteTransition(label = "rotation")
+   val rotation by infiniteTransition.animateFloat(
+      initialValue = 0f,
+      targetValue = 360f,
+      animationSpec = infiniteRepeatable(animation = tween(10_000, easing = LinearEasing)),
+      label = ""
+   )
+
    ConstraintLayout(modifier = modifier) {
       val (
          pictureRef,
@@ -164,13 +200,18 @@ private fun Player(
          errorRef,
       ) = createRefs()
 
+      AudioPlayer(uri = songUri, isPlaying = isPlaying)
+
       GlideImage(
-         modifier = Modifier.constrainAs(pictureRef) {
-            width = Dimension.fillToConstraints
-            height = Dimension.percent(0.8f)
-            centerHorizontallyTo(parent)
-            top.linkTo(parent.top)
-         },
+         modifier = Modifier
+            .constrainAs(pictureRef) {
+               width = Dimension.percent(0.8f)
+               height = Companion.ratio("1:1")
+               centerHorizontallyTo(parent)
+               top.linkTo(parent.top)
+            }
+            .rotate(if (isPlaying) rotation else 0f)
+            .clip(CircleShape),
          model = picture,
          contentDescription = "",
          contentScale = ContentScale.Crop,
@@ -207,9 +248,7 @@ private fun Player(
       FloatingActionButton(
          modifier = Modifier.constrainAs(playPauseButtonRef) {
             end.linkTo(parent.end, margin = 16.dp)
-            bottom.linkTo(parent.bottom, margin = 16.dp)
-            top.linkTo(pictureRef.bottom)
-            bottom.linkTo(pictureRef.bottom)
+            top.linkTo(pictureRef.bottom, margin = 8.dp)
          },
          onClick = {
             if (isPlaying) {
@@ -242,6 +281,34 @@ private fun Player(
             },
             onClick = onRetryButtonClicked
          )
+      }
+   }
+}
+
+@Composable
+fun AudioPlayer(
+   uri: String,
+   isPlaying: Boolean,
+) {
+   val context = LocalContext.current
+   val player = remember {
+      ExoPlayer.Builder(context)
+         .build()
+         .apply {
+            playWhenReady = true
+         }
+   }
+
+   LaunchedEffect(uri) {
+      player.setMediaItem(MediaItem.fromUri(uri))
+      player.prepare()
+   }
+
+   LaunchedEffect(isPlaying) {
+      if (isPlaying) {
+         player.play()
+      } else {
+         player.pause()
       }
    }
 }

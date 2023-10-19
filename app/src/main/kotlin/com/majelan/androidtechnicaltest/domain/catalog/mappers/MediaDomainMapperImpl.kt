@@ -10,6 +10,7 @@ class MediaDomainMapperImpl @Inject constructor() : MediaDomainMapper {
          id = media.id,
          picture = media.image,
          name = media.title,
+         songUri = media.source,
          duration = media.duration,
          trackNumber = media.trackNumber,
          artist = media.artist,
