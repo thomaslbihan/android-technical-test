@@ -42,6 +42,8 @@ The app is built with modern Android technologies, providing an engaging user ex
 
 - **R8 support**: The app supports code obfuscation with R8.
 
+- **Unit Testing**: 1 use case and 1 mapper are unit tested. The idea is not to have a 100% test coverage but to demonstrate how the architecture is testable and my ability to write some unit tests.
+
 ## Dependencies
 
 The following dependencies were used in the project:
@@ -70,12 +72,12 @@ The following dependencies were used in the project:
 
 ## Architecture
 
-- MVVM: The app is build with Model-View-ViewModel architecture. This architecture ensure a nice separation of concerns and handle some configuration changes issues.
-- Clean architecture: This architecture ensure a good separation of concerns and let the application scale nicely plus it enforce good practices for testability. 3 layers:
+- **MVVM:** The app is build with Model-View-ViewModel architecture. This architecture ensure a nice separation of concerns and handle some configuration changes issues.
+- **Clean architecture:** This architecture ensure a good separation of concerns and let the application scale nicely plus it enforce good practices for testability. 3 layers:
   - data : layer that get raw data. Contains datasources, api, db, repositories, mappers and entities
   - domain : business logic layer. Contains usecases, mappers and domain entities
   - presentation : ui logic and ui.
-- MVI: this architecture provides a nice way to communicate between composables and viewmodels:
+- **MVI:** this architecture provides a nice way to communicate between composables and viewmodels:
   - state : A data class that holds the state of the view.
   - event : A sealed interface that list the event the ui can fire.
   - action : one shoot action to display to the user.
