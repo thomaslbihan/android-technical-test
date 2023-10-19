@@ -6,7 +6,7 @@ The app is built with modern Android technologies, providing an engaging user ex
 
 ## Features
 
-- **Artist List:** Browse a list of all artists from the media catalog.
+- **Artist List:** Browse the list of all artists from the media catalog.
   - Displays the first album cover of the artist.
   - Displays the artist's name.
   - Displays the artist's album count.
@@ -33,8 +33,8 @@ The app is built with modern Android technologies, providing an engaging user ex
   - The list of the other songs of the artist
   - The list of the other songs of the same genre (recommendations section)
   - Click a song of the list selected it in the player
-  - Empty state is handled
-  - Error state is handled with a retry button
+  - Empty state is handled for each list
+  - Error state is handled with a retry button for each list and player
 
 - **Local Caching:** A single API call is made at the application start, then catalog is stored in a datasource for runtime.
 
