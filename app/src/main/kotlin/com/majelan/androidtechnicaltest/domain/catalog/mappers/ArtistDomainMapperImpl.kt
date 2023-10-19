@@ -1,6 +1,6 @@
 package com.majelan.androidtechnicaltest.domain.catalog.mappers
 
-import com.majelan.androidtechnicaltest.data.catalog.entity.Media
+import com.majelan.androidtechnicaltest.data.catalog.entities.Media
 import com.majelan.androidtechnicaltest.domain.catalog.entities.ArtistDomain
 import javax.inject.Inject
 

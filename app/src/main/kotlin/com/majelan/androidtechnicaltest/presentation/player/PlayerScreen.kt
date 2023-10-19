@@ -21,12 +21,15 @@ import androidx.compose.material.icons.Icons.Rounded
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,10 +56,12 @@ import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.majelan.androidtechnicaltest.R
+import com.majelan.androidtechnicaltest.presentation.artist_details.ArtistDetailsEvent
 import com.majelan.androidtechnicaltest.presentation.artist_details.entities.MediaUI
 import com.majelan.androidtechnicaltest.presentation.common.EmptyState
 import com.majelan.androidtechnicaltest.presentation.common.ErrorView
 import com.majelan.androidtechnicaltest.presentation.extensions.OnAction
+import com.majelan.androidtechnicaltest.presentation.extensions.centerHorizontallyTo
 import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.NavigateBack
 import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.ScrollToTop
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnArtistTracksRetryButtonClicked
@@ -69,6 +74,7 @@ import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnRecomm
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnRetryMediaButtonClicked
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
    viewModel: PlayerViewModel = hiltViewModel(),
@@ -92,11 +98,24 @@ fun PlayerScreen(
       viewModel.process(OnHardwareBackPressed)
    }
 
-   Box(modifier = Modifier.fillMaxSize()) {
+   Column(modifier = Modifier.fillMaxSize()) {
+      TopAppBar(
+         modifier = Modifier.fillMaxWidth(),
+         title = {},
+         navigationIcon = {
+            IconButton(onClick = { viewModel.process(OnBackButtonClicked) }) {
+               Icon(
+                  imageVector = AutoMirrored.Rounded.ArrowBack,
+                  contentDescription = ""
+               )
+            }
+         }
+      )
 
       ConstraintLayout(
          modifier = Modifier
             .fillMaxSize()
+            .weight(1f)
             .verticalScroll(scrollState)
       ) {
          val (playerRef, artistTracksRef, recommendationsRef) = createRefs()
@@ -104,8 +123,8 @@ fun PlayerScreen(
          Player(
             modifier = Modifier.constrainAs(playerRef) {
                width = Dimension.fillToConstraints
-               centerHorizontallyTo(parent)
-               top.linkTo(parent.top, margin = 16.dp)
+               centerHorizontallyTo(parent, margin = 16.dp)
+               top.linkTo(parent.top, margin = 8.dp)
             },
             picture = state.picture,
             title = state.title,
@@ -154,16 +173,6 @@ fun PlayerScreen(
             onRetryButtonClicked = { viewModel.process(OnRecommendationsRetryButtonClicked) }
          )
       }
-
-      IconButton(
-         modifier = Modifier.align(Alignment.TopStart),
-         onClick = { viewModel.process(OnBackButtonClicked) }
-      ) {
-         Icon(
-            imageVector = AutoMirrored.Rounded.ArrowBack,
-            contentDescription = ""
-         )
-      }
    }
 }
 
@@ -190,97 +199,100 @@ private fun Player(
       label = ""
    )
 
-   ConstraintLayout(modifier = modifier) {
-      val (
-         pictureRef,
-         titleRef,
-         artistNameRef,
-         playPauseButtonRef,
-         loadingRef,
-         errorRef,
-      ) = createRefs()
+   Card(modifier = modifier) {
+      ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+         val (
+            pictureRef,
+            titleRef,
+            artistNameRef,
+            playPauseButtonRef,
+            loadingRef,
+            errorRef,
+         ) = createRefs()
 
-      AudioPlayer(uri = songUri, isPlaying = isPlaying)
+         AudioPlayer(uri = songUri, isPlaying = isPlaying)
 
-      GlideImage(
-         modifier = Modifier
-            .constrainAs(pictureRef) {
-               width = Dimension.percent(0.8f)
-               height = Companion.ratio("1:1")
-               centerHorizontallyTo(parent)
-               top.linkTo(parent.top)
-            }
-            .rotate(if (isPlaying) rotation else 0f)
-            .clip(CircleShape),
-         model = picture,
-         contentDescription = "",
-         contentScale = ContentScale.Crop,
-      )
-
-      Text(
-         modifier = Modifier.constrainAs(titleRef) {
-            width = Companion.fillToConstraints
-            top.linkTo(pictureRef.bottom, margin = 16.dp)
-            start.linkTo(parent.start, margin = 16.dp)
-            end.linkTo(playPauseButtonRef.start, margin = 8.dp)
-         },
-         text = title,
-         maxLines = 1,
-         overflow = TextOverflow.Ellipsis,
-         style = MaterialTheme.typography.titleMedium,
-         textAlign = TextAlign.Start,
-      )
-
-      Text(
-         modifier = Modifier.constrainAs(artistNameRef) {
-            width = Companion.fillToConstraints
-            start.linkTo(parent.start, margin = 16.dp)
-            end.linkTo(playPauseButtonRef.start, margin = 8.dp)
-            top.linkTo(titleRef.bottom, margin = 8.dp)
-         },
-         text = artistName,
-         maxLines = 1,
-         overflow = TextOverflow.Ellipsis,
-         style = MaterialTheme.typography.labelMedium,
-         textAlign = TextAlign.Start,
-      )
-
-      FloatingActionButton(
-         modifier = Modifier.constrainAs(playPauseButtonRef) {
-            end.linkTo(parent.end, margin = 16.dp)
-            top.linkTo(pictureRef.bottom, margin = 8.dp)
-         },
-         onClick = {
-            if (isPlaying) {
-               onPauseButtonClicked()
-            } else onPlayButtonClicked()
-         }
-      ) {
-         Icon(
-            imageVector = if (isPlaying) {
-               Rounded.Pause
-            } else Rounded.PlayArrow,
-            contentDescription = ""
+         GlideImage(
+            modifier = Modifier
+               .constrainAs(pictureRef) {
+                  width = Dimension.percent(0.8f)
+                  height = Companion.ratio("1:1")
+                  centerHorizontallyTo(parent)
+                  top.linkTo(parent.top, margin = 16.dp)
+               }
+               .rotate(if (isPlaying) rotation else 0f)
+               .clip(CircleShape),
+            model = picture,
+            contentDescription = "",
+            contentScale = ContentScale.Crop,
          )
-      }
 
-      if (isLoadingVisible) {
-         CircularProgressIndicator(
-            modifier = Modifier.constrainAs(loadingRef) {
-               centerVerticallyTo(parent)
-               centerHorizontallyTo(parent)
-            }
-         )
-      }
-
-      if (isErrorVisible) {
-         ErrorView(
-            modifier = Modifier.constrainAs(errorRef) {
-               centerVerticallyTo(parent)
-               centerHorizontallyTo(parent)
+         Text(
+            modifier = Modifier.constrainAs(titleRef) {
+               width = Companion.fillToConstraints
+               top.linkTo(pictureRef.bottom, margin = 16.dp)
+               start.linkTo(parent.start, margin = 16.dp)
+               end.linkTo(playPauseButtonRef.start, margin = 8.dp)
             },
-            onClick = onRetryButtonClicked
+            text = title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Start,
          )
+
+         Text(
+            modifier = Modifier.constrainAs(artistNameRef) {
+               width = Companion.fillToConstraints
+               start.linkTo(parent.start, margin = 16.dp)
+               end.linkTo(playPauseButtonRef.start, margin = 8.dp)
+               top.linkTo(titleRef.bottom, margin = 8.dp)
+               bottom.linkTo(parent.bottom, margin = 16.dp)
+            },
+            text = artistName,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.labelMedium,
+            textAlign = TextAlign.Start,
+         )
+
+         FloatingActionButton(
+            modifier = Modifier.constrainAs(playPauseButtonRef) {
+               end.linkTo(parent.end, margin = 16.dp)
+               top.linkTo(pictureRef.bottom, margin = 8.dp)
+            },
+            onClick = {
+               if (isPlaying) {
+                  onPauseButtonClicked()
+               } else onPlayButtonClicked()
+            }
+         ) {
+            Icon(
+               imageVector = if (isPlaying) {
+                  Rounded.Pause
+               } else Rounded.PlayArrow,
+               contentDescription = ""
+            )
+         }
+
+         if (isLoadingVisible) {
+            CircularProgressIndicator(
+               modifier = Modifier.constrainAs(loadingRef) {
+                  centerVerticallyTo(parent)
+                  centerHorizontallyTo(parent)
+               }
+            )
+         }
+
+         if (isErrorVisible) {
+            ErrorView(
+               modifier = Modifier.constrainAs(errorRef) {
+                  centerVerticallyTo(parent)
+                  centerHorizontallyTo(parent)
+               },
+               onClick = onRetryButtonClicked
+            )
+         }
       }
    }
 }
@@ -337,7 +349,8 @@ private fun Section(
 
       Text(
          modifier = Modifier.constrainAs(titleRef) {
-            start.linkTo(parent.start, margin = 16.dp)
+            width = Companion.fillToConstraints
+            centerHorizontallyTo(parent, margin = 16.dp)
             top.linkTo(parent.top)
          },
          text = title,

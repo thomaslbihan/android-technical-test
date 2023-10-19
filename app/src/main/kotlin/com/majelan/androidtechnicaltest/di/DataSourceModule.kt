@@ -1,9 +1,9 @@
 package com.majelan.androidtechnicaltest.di
 
-import com.majelan.androidtechnicaltest.data.catalog.datasource.CatalogDataSource
-import com.majelan.androidtechnicaltest.data.catalog.datasource.LocalCatalogDataSource
-import com.majelan.androidtechnicaltest.data.catalog.datasource.LocalCatalogDataSourceImpl
-import com.majelan.androidtechnicaltest.data.catalog.datasource.RemoteCatalogDataSourceImpl
+import com.majelan.androidtechnicaltest.data.catalog.datasources.CatalogDataSource
+import com.majelan.androidtechnicaltest.data.catalog.datasources.LocalCatalogDataSource
+import com.majelan.androidtechnicaltest.data.catalog.datasources.LocalCatalogDataSourceImpl
+import com.majelan.androidtechnicaltest.data.catalog.datasources.RemoteCatalogDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

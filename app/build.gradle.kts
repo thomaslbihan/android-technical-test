@@ -17,8 +17,18 @@ android {
         versionName = "1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = File(projectDir, "keystore.keystore")
+            storePassword = "TLBETXMajelan"
+            keyAlias = "TLBETXMajelan"
+            keyPassword = "TLBETXMajelan"
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -79,6 +89,10 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.media3.exoplayer)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.io.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
 
 kapt {

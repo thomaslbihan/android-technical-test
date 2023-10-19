@@ -1,4 +1,4 @@
-package com.majelan.androidtechnicaltest.data.catalog.entity
+package com.majelan.androidtechnicaltest.data.catalog.entities
 
 data class Media(
    val id: String,
