@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">AndroidTechnicalTest</string>
+
+    <string name="common_retry">Retry</string>
+
+    <string name="artist_list_title">Browse artists</string>
+    <plurals name="artist_list_album_count">
+        <item quantity="one">%d album</item>
+        <item quantity="other">%d albums</item>
+    </plurals>
+    <string name="artist_list_empty">No artists to load</string>
+    <string name="artist_list_error">Something went wrong</string>
+
+    <string name="artist_details_title">%s\'s albums</string>
+    <string name="artist_details_empty">No albums to load</string>
+    <plurals name="artist_details_track_count">
+        <item quantity="one">%d track</item>
+        <item quantity="other">%d tracks</item>
+    </plurals>
+
+    <string name="player_artist_tracks_title">%s other tracks:</string>
+    <string name="player_artist_tracks_empty">No other songs for %s.</string>
+    <string name="player_recommendations_title">Recommendations based on current song:</string>
+    <string name="player_recommendations_empty">There\'s no similar song</string>
 </resources>
