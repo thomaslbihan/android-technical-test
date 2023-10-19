@@ -36,7 +36,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-   private val savedStateHandle: SavedStateHandle,
+   savedStateHandle: SavedStateHandle,
    private val getMediaUseCase: GetMediaUseCase,
    private val getMediasByArtistUseCase: GetMediasByArtistUseCase,
    private val getMediasByGenreUseCase: GetMediasByGenreUseCase,

@@ -1,53 +1,101 @@
+# Majelan Media Player App
 
-# Majelan Android Technical Test
+Welcome to the Majelan Media Player App project! 
+This Android application is designed to serve as a media player for exploring and enjoying a curated collection of audio content. 
+The app is built with modern Android technologies, providing an engaging user experience.
 
-## Getting Started
+## Features
 
-Fork this repository to work on it as you would usually do. Once you're done, send us the URL so we can take a look!
+- **Artist List:** Browse a list of all artists from the media catalog.
+  - Displays the first album cover of the artist.
+  - Displays the artist's name.
+  - Displays the artist's album count.
+  - Clicking on an item navigate to the Artist Details screen.
+  - Empty state is handled
+  - Error state is handled with a retry button
 
-### Running the thing
+- **Artist Details:** Explore all the artist's medias sort by albums.
+  - Displays the artist's albums
+  - For each albums it displays
+    - cover
+    - title
+    - number of tracks
+    - formatted duration
+    - ordered list of tracks
+  - You can click play album button : it navigates to the Player Screen playing the first track of the album.
+  - You can click on a track : it navigates to the Player Screen playing the track.
+  - Empty state is handled
+  - Error state is handled with a retry button
 
-This project is a fresh empty project to let you express as you want your coding style for an app going to production, so use it in Android Studio as usual
+- **Player Screen:** Play the selected media, and view a playlist of other media by the same artist and recommendations.
+  - Display current track informations (cover, title and artist)
+  - Hit the play button to drop the beat 💃
+  - The list of the other songs of the artist
+  - The list of the other songs of the same genre (recommendations section)
+  - Click a song of the list selected it in the player
+  - Empty state is handled
+  - Error state is handled with a retry button
 
-## What you'll have to do
+- **Local Caching:** A single API call is made at the application start, then catalog is stored in a datasource for runtime.
 
-You'll have to build a player app, and have to dev for one or two hours, or more if you want to build something more substantial, and your work will be a base for a discussion later after we have reviewed your code. 
-Of course in this limited time, you won't be able to do it fully from catalog to functional player, but do your best.
+- **Dark theme support**: The app supports dark theme depending on phone display settings.
 
+- **R8 support**: The app supports code obfuscation with R8.
 
-Objective is to create three screens that chains like that :
-- a screen containing a list of all artists
-- a screen containing media of the artist selected on previous screen
-- a screen player for media selected and playlist of other media of this artist
+## Dependencies
 
-The api to retrieve the music catalog is simplify call to this [common repo](https://storage.googleapis.com/uamp/catalog.json) which contains a list of media.
+The following dependencies were used in the project:
 
+- [Retrofit](https://square.github.io/retrofit/): For making network requests and handling API integration.
 
-#### Medias
-A media is described as follow
-```
-{  
-	"id": "spatial_04",  
-	"title": "Steamtrain interior",  
-	"album": "Spatial Audio",  
-	"artist": "Stephan Schutze",  
-	"genre": "Ambience",  
-	"source": "https://storage.googleapis.com/uamp/Spatial Audio/Steamtrain.wav",  
-	"image": "https://storage.googleapis.com/uamp/Spatial Audio/Steamtrain.jpg",  
-	"trackNumber": 4,  
-	"totalTrackCount": 6,  
-	"duration": 296,  
-	"site": "https://library.soundfield.com/track/65"  
-}
-```
+- [Glide](https://bumptech.github.io/glide/): For efficient image loading and caching.
 
-### Requirements
-- You must use the empty project code as a base for your work. You can add any other dependency you need.
-- You have to write code in kotlin of courser, and also all the android modern stack (flow, compose, navigation, modularization, catalog,...)
+- [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel): For managing UI-related data.
 
-### Bonus points
-- You can add any extra feature that you'd like to see in this app. Be creative!
+- [Flow](https://developer.android.com/kotlin/flow): For observing data changes and updating the UI.
 
+- [Compose](https://developer.android.com/jetpack/compose): For building a nice and customizable reactive UI.
 
-### Sample screen render
-![Screen list of artists](readmeAssets/ArtistList.png) | ![Screen list of artist's medias](readmeAssets/MediaList.png) | ![Screen player of current playing media](readmeAssets/Player.png)
+- [Media3](https://developer.android.com/guide/topics/media/media3): For playing the songs.
+
+- [Hilt](https://developer.android.com/training/dependency-injection/hilt-android): For dependency injection and ensure best practices for testability.
+
+- [Compose Navigation](https://developer.android.com/jetpack/compose/navigation): For navigating between composables.
+
+- [JUnit4](https://junit.org/junit4/): For Unit testing
+
+- [Mockk](https://mockk.io/): A mocking library for Kotlin
+
+- [Version Catalog](https://developer.android.com/build/migrate-to-catalogs): For adding and maintaining dependencies and plugins in a scalable way.
+
+## Architecture
+
+- MVVM: The app is build with Model-View-ViewModel architecture. This architecture ensure a nice separation of concerns and handle some configuration changes issues.
+- Clean architecture: This architecture ensure a good separation of concerns and let the application scale nicely plus it enforce good practices for testability. 3 layers:
+  - data : layer that get raw data. Contains datasources, api, db, repositories, mappers and entities
+  - domain : business logic layer. Contains usecases, mappers and domain entities
+  - presentation : ui logic and ui.
+- MVI: this architecture provides a nice way to communicate between composables and viewmodels:
+  - state : A data class that holds the state of the view.
+  - event : A sealed interface that list the event the ui can fire.
+  - action : one shoot action to display to the user.
+
+## Screens
+
+### Artist List
+
+|              Artist List light               |              Artist List dark              |
+|:--------------------------------------------:|:------------------------------------------:|
+| ![list light](./readmeAssets/list_light.png) | ![list dark](./readmeAssets/list_dark.png) |
+
+### Artist Details
+
+|                Artist Details light                |               Artist Details dark                |
+|:--------------------------------------------------:|:------------------------------------------------:|
+| ![details light](./readmeAssets/details_light.png) | ![details dark](./readmeAssets/details_dark.png) |
+
+### Player
+
+|                   Player light                   |                  Player dark                   |
+|:------------------------------------------------:|:----------------------------------------------:|
+| ![player light](./readmeAssets/player_light.png) | ![player dark](./readmeAssets/player_dark.png) |
