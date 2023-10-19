@@ -12,13 +12,13 @@ import com.majelan.androidtechnicaltest.domain.catalog.usecase.GetMediasByArtist
 import com.majelan.androidtechnicaltest.domain.catalog.usecase.GetMediasByGenreUseCase
 import com.majelan.androidtechnicaltest.presentation.artist_details.entities.MediaUI
 import com.majelan.androidtechnicaltest.presentation.artist_details.mappers.MediaUIMapper
+import com.majelan.androidtechnicaltest.presentation.media_player.PlayerManager
 import com.majelan.androidtechnicaltest.presentation.mvi.MVIViewModel
 import com.majelan.androidtechnicaltest.presentation.navigation.Destination.Player.Argument
 import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.NavigateBack
 import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.ScrollToTop
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnArtistTracksRetryButtonClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnBackButtonClicked
-import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnHardwareBackPressed
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnMediaItemClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnPauseButtonClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnPlayButtonClicked
@@ -26,7 +26,6 @@ import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnRecomm
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnRetryMediaButtonClicked
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -41,6 +40,7 @@ class PlayerViewModel @Inject constructor(
    private val getMediasByArtistUseCase: GetMediasByArtistUseCase,
    private val getMediasByGenreUseCase: GetMediasByGenreUseCase,
    private val mediaUIMapper: MediaUIMapper,
+   private val playerManager: PlayerManager,
    @IODispatcher private val ioDispatcher: CoroutineDispatcher,
    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ): MVIViewModel<PlayerState, PlayerEvent, PlayerAction>(
@@ -50,7 +50,6 @@ class PlayerViewModel @Inject constructor(
       isMediaErrorVisible = false,
       picture = "",
       title = "",
-      songUri = "",
       artistName = "",
       artistTracks = emptyList(),
       isArtistTracksLoadingVisible = false,
@@ -71,11 +70,11 @@ class PlayerViewModel @Inject constructor(
       observeMediaId()
       observeArtistName()
       observeGenre()
+      observePlayerManager()
    }
 
    override fun process(event: PlayerEvent) {
       when(event) {
-         OnHardwareBackPressed -> onHardwareBackPressed()
          OnBackButtonClicked -> onBackButtonClicked()
          OnPauseButtonClicked -> onPauseButtonClicked()
          OnPlayButtonClicked -> onPlayButtonClicked()
@@ -86,20 +85,20 @@ class PlayerViewModel @Inject constructor(
       }
    }
 
-   private fun onHardwareBackPressed() {
-      navigateBack()
-   }
-
    private fun onBackButtonClicked() {
-      navigateBack()
+      emit(NavigateBack)
    }
 
    private fun onPauseButtonClicked() {
-      updateState { it.copy(isPlaying = false) }
+      viewModelScope.launch {
+         playerManager.pause()
+      }
    }
 
    private fun onPlayButtonClicked() {
-      updateState { it.copy(isPlaying = true) }
+      viewModelScope.launch {
+         playerManager.play()
+      }
    }
 
    private fun onRetryMediaButtonClicked() {
@@ -150,11 +149,14 @@ class PlayerViewModel @Inject constructor(
          it.copy(
             picture = media.picture,
             title = media.name,
-            songUri = media.songUri,
             artistName = media.artist,
             genre = media.genre,
             isMediaLoadingVisible = false,
          )
+      }
+      viewModelScope.launch {
+         playerManager.setMedia(media.songUri)
+         playerManager.play()
       }
    }
 
@@ -277,8 +279,11 @@ class PlayerViewModel @Inject constructor(
    }
    //endregion
 
-   private fun navigateBack() {
-      updateState { it.copy(isPlaying = false) }
-      emit(NavigateBack)
+   private fun observePlayerManager() {
+      viewModelScope.launch(ioDispatcher) {
+         playerManager.isPlayingFlow.collect { isPlaying ->
+            updateState { it.copy(isPlaying = isPlaying) }
+         }
+      }
    }
 }

@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.media3.exoplayer)
+    implementation(libs.media3.session)
 
     testImplementation(libs.junit)
     testImplementation(libs.io.mockk)

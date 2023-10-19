@@ -1,13 +1,11 @@
 package com.majelan.androidtechnicaltest.presentation.player
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,16 +29,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,13 +45,10 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.Dimension.Companion
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.majelan.androidtechnicaltest.R
-import com.majelan.androidtechnicaltest.presentation.artist_details.ArtistDetailsEvent
 import com.majelan.androidtechnicaltest.presentation.artist_details.entities.MediaUI
 import com.majelan.androidtechnicaltest.presentation.common.EmptyState
 import com.majelan.androidtechnicaltest.presentation.common.ErrorView
@@ -66,7 +58,6 @@ import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.Navigat
 import com.majelan.androidtechnicaltest.presentation.player.PlayerAction.ScrollToTop
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnArtistTracksRetryButtonClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnBackButtonClicked
-import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnHardwareBackPressed
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnMediaItemClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnPauseButtonClicked
 import com.majelan.androidtechnicaltest.presentation.player.PlayerEvent.OnPlayButtonClicked
@@ -92,10 +83,6 @@ fun PlayerScreen(
 
          NavigateBack -> navController.popBackStack()
       }
-   }
-
-   BackHandler {
-      viewModel.process(OnHardwareBackPressed)
    }
 
    Column(modifier = Modifier.fillMaxSize()) {
@@ -128,7 +115,6 @@ fun PlayerScreen(
             },
             picture = state.picture,
             title = state.title,
-            songUri = state.songUri,
             artistName = state.artistName,
             isPlaying = state.isPlaying,
             isErrorVisible = state.isMediaErrorVisible,
@@ -182,7 +168,6 @@ private fun Player(
    modifier: Modifier,
    picture: String,
    title: String,
-   songUri: String,
    artistName: String,
    isPlaying: Boolean,
    isErrorVisible: Boolean,
@@ -209,8 +194,6 @@ private fun Player(
             loadingRef,
             errorRef,
          ) = createRefs()
-
-         AudioPlayer(uri = songUri, isPlaying = isPlaying)
 
          GlideImage(
             modifier = Modifier
@@ -293,34 +276,6 @@ private fun Player(
                onClick = onRetryButtonClicked
             )
          }
-      }
-   }
-}
-
-@Composable
-fun AudioPlayer(
-   uri: String,
-   isPlaying: Boolean,
-) {
-   val context = LocalContext.current
-   val player = remember {
-      ExoPlayer.Builder(context)
-         .build()
-         .apply {
-            playWhenReady = true
-         }
-   }
-
-   LaunchedEffect(uri) {
-      player.setMediaItem(MediaItem.fromUri(uri))
-      player.prepare()
-   }
-
-   LaunchedEffect(isPlaying) {
-      if (isPlaying) {
-         player.play()
-      } else {
-         player.pause()
       }
    }
 }
