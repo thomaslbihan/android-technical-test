@@ -87,12 +87,11 @@ class PlayerViewModel @Inject constructor(
    }
 
    private fun onHardwareBackPressed() {
-      updateState { it.copy(isPlaying = false) }
+      navigateBack()
    }
 
    private fun onBackButtonClicked() {
-      onHardwareBackPressed()
-      emit(NavigateBack)
+      navigateBack()
    }
 
    private fun onPauseButtonClicked() {
@@ -277,4 +276,9 @@ class PlayerViewModel @Inject constructor(
       }
    }
    //endregion
+
+   private fun navigateBack() {
+      updateState { it.copy(isPlaying = false) }
+      emit(NavigateBack)
+   }
 }
