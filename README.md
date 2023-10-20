@@ -1,6 +1,6 @@
-# Majelan Media Player App
+# AndroidTechnicalTest
 
-Welcome to the Majelan Media Player App project! 
+Welcome to the AndroidTechnicalTest project! 
 This Android application is designed to serve as a media player for exploring and enjoying a curated collection of audio content. 
 The app is built with modern Android technologies, providing an engaging user experience.
 
